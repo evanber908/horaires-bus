@@ -223,12 +223,21 @@ function filterHoraires() {
       `}).join('')}
     </div>`;
 
-  // --- NOUVEAU : DÉFILEMENT AUTOMATIQUE ---
-  // Sélectionne le premier bus qui n'est pas passé (en route ou à venir)
+  // --- NOUVEAU : DÉFILEMENT AUTOMATIQUE INTERNE ---
+  const scheduleList = conteneur.querySelector('.schedule-list');
   const premierBusActif = conteneur.querySelector('.schedule-item:not(.past-bus)');
-  if (premierBusActif) {
+
+  if (premierBusActif && scheduleList) {
     setTimeout(() => {
-      premierBusActif.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Calcule la position exacte du bus par rapport à sa boîte conteneur
+      const listRect = scheduleList.getBoundingClientRect();
+      const itemRect = premierBusActif.getBoundingClientRect();
+      
+      // Fait défiler uniquement la boîte des horaires, sans bouger la page entière
+      scheduleList.scrollTo({
+        top: scheduleList.scrollTop + (itemRect.top - listRect.top),
+        behavior: 'smooth'
+      });
     }, 100);
   }
 }
