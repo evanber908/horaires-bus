@@ -47,6 +47,7 @@ body {
 }
 .vacances { background-color: #fef08a; color: #854d0e; }
 .scolaire { background-color: #d1fae5; color: #065f46; }
+.weekend  { background-color: #e0e7ff; color: #3730a3; }
 .error { background-color: #fecaca; color: #991b1b; }
 
 .container {
@@ -316,7 +317,7 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
   background: #f1f5f9;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   .app-header {
     max-width: 1500px;
     padding: 32px 24px 24px;
@@ -378,4 +379,24 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
   .schedule-time span { font-size: 0.9rem; }
   .schedule-dest { font-size: 1.2rem; }
   .badge { font-size: 1rem; padding: 6px 14px; }
+
+.select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  .select-wrapper label {
+    white-space: nowrap;  /* Empêche le titre de se couper sur 2 lignes */
+    flex: 0 0 140px;      /* Largeur fixe dédiée aux titres pour qu'ils soient tous alignés */
+    font-size: 0.95rem;   /* Taille de texte lisible */
+    font-weight: 500;
+  }
+
+  .select-wrapper select,
+  .arret-select {
+    flex: 1;              /* Prend le reste de l'espace */
+    max-width: 400px;     /* Limite la largeur maximale du champ déroulant */
+  }
 }

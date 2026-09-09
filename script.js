@@ -319,7 +319,17 @@ function findNextBus(userLat, userLng) {
 
 async function afficherPeriode() {
   const box = document.getElementById('status-box');
-  const jour = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const day = now.getDay(); // 0 = Dimanche, 6 = Samedi
+
+  // Détection du week-end
+  if (day === 0 || day === 6) {
+    box.className = 'weekend';
+    box.innerText = '🥳 Week-end';
+    return;
+  }
+
+  const jour = now.toISOString().split('T')[0];
   const url = CONFIG.vacances + '?limit=1&where='
     + encodeURIComponent(`location="Orléans-Tours" and start_date<="${jour}" and end_date>="${jour}"`);
   try {
