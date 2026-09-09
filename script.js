@@ -158,11 +158,9 @@ function filterHoraires() {
   let isToday = (jourChoisi === todayYMD);
 
   if (isToday) {
-    // Si c'est aujourd'hui, on garde le comportement des 24h glissantes
     departs = getProchaines24Heures(arret)
       .filter(d => destinationChoisie === "" || d.dest === destinationChoisie);
   } else {
-    // Si c'est un autre jour, on reconstruit la date et on récupère la journée complète
     const year = parseInt(jourChoisi.substring(0, 4), 10);
     const month = parseInt(jourChoisi.substring(4, 6), 10) - 1;
     const day = parseInt(jourChoisi.substring(6, 8), 10);
@@ -171,8 +169,7 @@ function filterHoraires() {
     departs = departsDuJour(arret, dateChoisie)
       .filter(d => destinationChoisie === "" || d.dest === destinationChoisie);
 
-    // Ajout d'un marqueur pour l'affichage visuel
-    departs = departs.map(d => ({ 
+    departs = departs0.map(d => ({ 
       ...d, 
       isDemain: false, 
       isOtherDay: true, 
@@ -225,6 +222,15 @@ function filterHoraires() {
         </div>
       `}).join('')}
     </div>`;
+
+  // --- NOUVEAU : DÉFILEMENT AUTOMATIQUE ---
+  // Sélectionne le premier bus qui n'est pas passé (en route ou à venir)
+  const premierBusActif = conteneur.querySelector('.schedule-item:not(.past-bus)');
+  if (premierBusActif) {
+    setTimeout(() => {
+      premierBusActif.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
 }
 
 function initCarte() {
