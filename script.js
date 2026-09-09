@@ -84,12 +84,39 @@ function renderSelect() {
   ).join('');
 }
 
+// NOUVELLE FONCTION : Génère les options du menu des destinations
+function renderDestSelect() {
+  const destSelect = document.getElementById('dest-select');
+  if (!destSelect || !REF) return;
+
+  const currentDest = destSelect.value;
+  const arret = REF.arrets.find(a => a.id === currentArretId);
+  if (!arret) return;
+
+  // On extrait toutes les destinations uniques possibles depuis cet arrêt
+  const dests = new Set();
+  arret.departs.forEach(d => dests.add(d.dest));
+  
+  const sortedDests = Array.from(dests).sort();
+
+  destSelect.innerHTML = '<option value="">Tous les arrêts</option>' +
+    sortedDests.map(dest => `<option value="${dest}">${dest}</option>`).join('');
+
+  // Rétablit la sélection précédente si elle existe toujours pour ce nouvel arrêt de départ
+  if (sortedDests.includes(currentDest)) {
+    destSelect.value = currentDest;
+  } else {
+    destSelect.value = "";
+  }
+}
+
 function selectArret(arretId) {
   currentArretId = arretId;
   const select = document.getElementById('arret-select');
   if (select && select.value !== arretId) {
     select.value = arretId;
   }
+  renderDestSelect(); // Met à jour la liste des destinations
   filterHoraires();
 }
 
@@ -99,14 +126,15 @@ function filterHoraires() {
   const arret = REF.arrets.find(a => a.id === currentArretId);
   if (!arret) return;
 
-  const recherche = (document.getElementById('search-destination').value || '').toLowerCase().trim();
+  const destSelect = document.getElementById('dest-select');
+  const destinationChoisie = destSelect ? destSelect.value : "";
   
   const departs = getProchaines24Heures(arret)
-    .filter(d => d.dest.toLowerCase().includes(recherche));
+    .filter(d => destinationChoisie === "" || d.dest === destinationChoisie);
 
   if (departs.length === 0) {
     conteneur.innerHTML = '<div class="no-result">Aucun départ prévu dans les prochaines 24h'
-      + (recherche ? ' vers cette destination.' : '.') + '</div>';
+      + (destinationChoisie ? ' vers cette destination.' : '.') + '</div>';
     return;
   }
 
@@ -263,7 +291,11 @@ function brancherEvenements() {
     });
   }
   
-  document.getElementById('search-destination').addEventListener('input', filterHoraires);
+  // Écouteur pour le nouveau menu des arrivées
+  const destSelect = document.getElementById('dest-select');
+  if (destSelect) {
+    destSelect.addEventListener('change', filterHoraires);
+  }
     
   const btnRecenter = document.getElementById('recenter-btn');
   if (btnRecenter) {
