@@ -455,8 +455,9 @@ async function init() {
       + '<br><small style="color:var(--text-muted); margin-top:8px; display:block;">📍 Activez la géolocalisation pour l\'arrêt proche.</small>'
     : `Aucun départ prévu d'ici demain depuis <b>${nomArret(defaut)}</b>.`;
 
+// --- NOUVEAU CODE (Exécution unique au chargement) ---
   if ('geolocation' in navigator && REF.arrets && REF.arrets.length > 0) {
-    navigator.geolocation.watchPosition(
+    navigator.geolocation.getCurrentPosition(
       pos => {
         const la = pos.coords.latitude, lo = pos.coords.longitude;
         if (map) {
@@ -471,6 +472,7 @@ async function init() {
       },
       { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
     );
+  }
 
     setInterval(() => {
       navigator.geolocation.getCurrentPosition(p =>
