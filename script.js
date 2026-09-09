@@ -288,7 +288,7 @@ function findNextBus(userLat, userLng) {
 
   lastClosestStop = arretProche;
 
-  selectArret(arretProche.id);
+  //selectArret(arretProche.id);
 
   if (map && !mapCenteredOnce) {
     map.setView([arretProche.lat, arretProche.lng], 14);
