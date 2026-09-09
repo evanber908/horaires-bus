@@ -82,12 +82,11 @@ function badge(ligne) {
   return `<span class="badge" style="background:${couleur}">${ligne}</span>`;
 }
 
-function renderTabs() {
-  const tabs = document.getElementById('tabs');
-  if (!tabs) return;
-  tabs.innerHTML = REF.arrets.map(a =>
-    `<button class="tab-btn ${a.id === currentArretId ? 'active' : ''}" data-arret="${a.id}">`
-    + `${nomArret(a)}</button>`
+function renderSelect() {
+  const select = document.getElementById('arret-select');
+  if (!select || !REF || !REF.arrets) return;
+  select.innerHTML = REF.arrets.map(a =>
+    `<option value="${a.id}" ${a.id === currentArretId ? 'selected' : ''}>${nomArret(a)}</option>`
   ).join('');
 }
 
@@ -96,7 +95,10 @@ function selectArret(arretId, fromUser = false) {
     autoTabSelected = true;
   }
   currentArretId = arretId;
-  renderTabs();
+  const select = document.getElementById('arret-select');
+  if (select && select.value !== arretId) {
+    select.value = arretId;
+  }
   filterHoraires();
 }
 
@@ -203,10 +205,9 @@ function findNextBus(userLat, userLng) {
 
   lastClosestStop = arretProche;
 
-  // Sélectionne l'onglet de l'arrêt le plus proche au premier repérage GPS
+  // Sélectionne l'arrêt le plus proche dans la liste déroulante au repérage GPS
   if (!autoTabSelected) {
     selectArret(arretProche.id);
-    autoTabSelected = true;
   }
 
   if (map && !mapCenteredOnce) {
@@ -272,10 +273,12 @@ async function rafraichirLignes() {
 /* --------------------------------------------------------------- démarrage */
 
 function brancherEvenements() {
-  document.getElementById('tabs').addEventListener('click', e => {
-    const btn = e.target.closest('[data-arret]');
-    if (btn) selectArret(btn.dataset.arret, true);
-  });
+  const selectEl = document.getElementById('arret-select');
+  if (selectEl) {
+    selectEl.addEventListener('change', e => {
+      selectArret(e.target.value, true);
+    });
+  }
   
   document.getElementById('search-destination').addEventListener('input', filterHoraires);
     
@@ -346,6 +349,7 @@ async function init() {
 
   brancherEvenements();
   initCarte();
+  renderSelect();
   selectArret(defaut.id);
   afficherPeriode();
 
