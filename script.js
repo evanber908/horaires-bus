@@ -1,5 +1,3 @@
-/* Horaires Rémi 45 — Lignes 20A et 20B */
-
 const CONFIG = {
   horaires: 'data/horaires.json',
   lignes: 'https://data.centrevaldeloire.fr/api/explore/v2.1/catalog/datasets/jvmalin_lignes/records'
@@ -14,9 +12,6 @@ let map = null;
 let userMarker = null;
 let mapCenteredOnce = false; 
 let lastClosestStop = null;
-let autoTabSelected = false; // Empêche de réécrire le choix manuel de l'utilisateur
-
-/* ------------------------------------------------------------------ dates */
 
 function ymd(d) {
   return String(d.getFullYear())
@@ -71,8 +66,6 @@ function getProchaines24Heures(arret) {
   return [...listeAujourdhui, ...listeDemain];
 }
 
-/* ----------------------------------------------------------------- rendus */
-
 function nomArret(a) {
   return a.commune ? `${a.commune.toUpperCase()} — ${a.nom}` : a.nom;
 }
@@ -82,21 +75,21 @@ function badge(ligne) {
   return `<span class="badge" style="background:${couleur}">${ligne}</span>`;
 }
 
-function renderTabs() {
-  const tabs = document.getElementById('tabs');
-  if (!tabs) return;
-  tabs.innerHTML = REF.arrets.map(a =>
-    `<button class="tab-btn ${a.id === currentArretId ? 'active' : ''}" data-arret="${a.id}">`
-    + `${nomArret(a)}</button>`
+function renderSelect() {
+  const select = document.getElementById('arret-select');
+  if (!select || !REF || !REF.arrets) return;
+  select.innerHTML = REF.arrets.map(a =>
+    `<option value="${a.id}" ${a.id === currentArretId ? 'selected' : ''}>`
+    + `${nomArret(a)}</option>`
   ).join('');
 }
 
-function selectArret(arretId, fromUser = false) {
-  if (fromUser) {
-    autoTabSelected = true;
-  }
+function selectArret(arretId) {
   currentArretId = arretId;
-  renderTabs();
+  const select = document.getElementById('arret-select');
+  if (select && select.value !== arretId) {
+    select.value = arretId;
+  }
   filterHoraires();
 }
 
@@ -155,8 +148,6 @@ function filterHoraires() {
     </div>`;
 }
 
-/* --------------------------------------------------------------- carte GPS */
-
 function initCarte() {
   const el = document.getElementById('map');
   if (!el || typeof L === 'undefined') return;
@@ -203,11 +194,8 @@ function findNextBus(userLat, userLng) {
 
   lastClosestStop = arretProche;
 
-  // Sélectionne l'onglet de l'arrêt le plus proche au premier repérage GPS
-  if (!autoTabSelected) {
-    selectArret(arretProche.id);
-    autoTabSelected = true;
-  }
+  // L'arrêt le plus proche est toujours sélectionné dans la liste
+  selectArret(arretProche.id);
 
   if (map && !mapCenteredOnce) {
     map.setView([arretProche.lat, arretProche.lng], 14);
@@ -235,8 +223,6 @@ function findNextBus(userLat, userLng) {
     resultat.innerHTML = `Aucun départ prévu d'ici demain pour <b>${nomArret(arretProche)}</b>.`;
   }
 }
-
-/* ------------------------------------------------------- bandeau vacances */
 
 async function afficherPeriode() {
   const box = document.getElementById('status-box');
@@ -269,13 +255,13 @@ async function rafraichirLignes() {
   } catch (e) {}
 }
 
-/* --------------------------------------------------------------- démarrage */
-
 function brancherEvenements() {
-  document.getElementById('tabs').addEventListener('click', e => {
-    const btn = e.target.closest('[data-arret]');
-    if (btn) selectArret(btn.dataset.arret, true);
-  });
+  const select = document.getElementById('arret-select');
+  if (select) {
+    select.addEventListener('change', e => {
+      selectArret(e.target.value);
+    });
+  }
   
   document.getElementById('search-destination').addEventListener('input', filterHoraires);
     
@@ -346,6 +332,7 @@ async function init() {
 
   brancherEvenements();
   initCarte();
+  renderSelect();
   selectArret(defaut.id);
   afficherPeriode();
 

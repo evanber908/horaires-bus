@@ -1,4 +1,3 @@
-/* Variables pour un thème moderne et cohérent */
 :root {
   --bg-app: #f1f5f9;
   --bg-card: #ffffff;
@@ -23,7 +22,6 @@ body {
   padding-bottom: 30px;
 }
 
-/* En-tête */
 .app-header {
   display: flex;
   justify-content: space-between;
@@ -51,7 +49,6 @@ body {
 .scolaire { background-color: #d1fae5; color: #065f46; }
 .error { background-color: #fecaca; color: #991b1b; }
 
-/* Disposition principale (Mobile par défaut) */
 .container {
   max-width: 600px;
   margin: 0 auto;
@@ -65,7 +62,6 @@ body {
   flex-direction: column;
 }
 
-/* Cartes */
 .card {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
@@ -80,7 +76,6 @@ body {
   margin-bottom: 16px; 
 }
 
-/* Info Bus (Mise en évidence) */
 .highlight-card {
   background: linear-gradient(145deg, #ffffff, #f8fafc);
   border: 1px solid var(--border);
@@ -97,7 +92,6 @@ body {
 }
 .bus-info b { color: var(--primary-hover); }
 
-/* Badges de lignes */
 .badge {
   color: white;
   padding: 4px 10px;
@@ -110,7 +104,6 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-/* Carte interactive */
 .map-container {
   height: 240px;
   width: 100%;
@@ -120,40 +113,43 @@ body {
   z-index: 1;
 }
 
-/* Onglets */
-.tabs-container {
+/* Menu déroulant de sélection d'arrêt */
+.select-wrapper {
   display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 12px;
-  margin-bottom: 8px;
-  scrollbar-width: none;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-main);
 }
-.tabs-container::-webkit-scrollbar { display: none; }
 
-.tab-btn {
-  background: var(--bg-app);
-  border: 1px solid var(--border);
-  padding: 10px 16px;
-  border-radius: 30px;
-  font-size: 0.9rem;
+.arret-select {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 0.95rem;
   font-weight: 500;
-  white-space: nowrap;
+  background-color: var(--bg-app);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  outline: none;
   cursor: pointer;
-  color: var(--text-muted);
   transition: all 0.2s ease;
-}
-.tab-btn:hover {
-  background: #e2e8f0;
-}
-.tab-btn.active {
-  background: var(--text-main);
-  color: white;
-  border-color: var(--text-main);
-  box-shadow: var(--shadow-sm);
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 40px;
 }
 
-/* Barre de recherche */
+.arret-select:focus {
+  border-color: var(--primary);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
 .search-wrapper { margin-bottom: 16px; }
 .search-box {
   width: 100%;
@@ -171,7 +167,6 @@ body {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
-/* Liste des horaires */
 .schedule-list {
   display: flex;
   flex-direction: column;
@@ -195,16 +190,12 @@ body {
   background: #ffffff;
 }
 
-/* ------------- NOUVEAUX STYLES DES JOURS ET STATUTS ------------- */
-
-/* Bus de demain (Bordure pointillée pour distinguer) */
 .schedule-item.tomorrow-bus {
   background-color: #f8fafc;
   border-style: dashed;
   border-color: #cbd5e1;
 }
 
-/* Bus en cours de trajet */
 .schedule-item.in-transit-bus {
   background-color: #fefce8;
   border: 1px solid #fef08a;
@@ -216,7 +207,6 @@ body {
   background-color: #fef9c3;
 }
 
-/* Bus déjà passés */
 .schedule-item.past-bus {
   opacity: 0.5;
   background-color: var(--bg-app);
@@ -226,10 +216,9 @@ body {
   box-shadow: none;
 }
 
-/* Badges textes d'états (Demain, Aujourd'hui, Passé...) */
 .tomorrow-label {
   font-size: 0.75rem;
-  color: #8b5cf6; /* Violet pour demain */
+  color: #8b5cf6;
   margin-top: 4px;
   font-weight: 700;
   display: flex;
@@ -265,8 +254,6 @@ body {
   font-weight: 500;
 }
 
-/* ----------------------------------------------------------------- */
-
 .schedule-time {
   display: flex;
   flex-direction: column;
@@ -298,7 +285,6 @@ body {
   border-radius: var(--radius-md);
 }
 
-/* Widget mode et Footer */
 body.widget-mode .map-container,
 body.widget-mode #card-horaires { display: none; }
 body.widget-mode { background: transparent; padding: 0; }
@@ -312,7 +298,6 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
 }
 .source a { color: var(--primary); text-decoration: none; font-weight: 500;}
 
-/* MEDIA QUERY : ORDINATEUR & GRANDS ÉCRANS */
 @media (min-width: 900px) {
   .app-header {
     max-width: 1500px;
@@ -355,16 +340,17 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
     margin-bottom: 0;
   }
   #card-horaires { margin-bottom: 0; }
-  .tabs-container {
-    flex-wrap: wrap;
-    overflow-x: visible;
-    gap: 12px;
-    padding-bottom: 16px;
+  
+  .select-wrapper {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
   }
-  .tab-btn {
+  .arret-select {
     font-size: 1rem;
     padding: 12px 20px;
   }
+
   .schedule-item {
     grid-template-columns: 130px 80px 1fr;
     padding: 24px 28px;
@@ -375,7 +361,6 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
   .badge { font-size: 1rem; padding: 6px 14px; }
 }
 
-/* Bouton de recentrage de la carte */
 .map-wrapper {
   position: relative;
   width: 100%;

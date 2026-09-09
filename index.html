@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mes Horaires Rémi 45</title>
   <link rel="icon" type="image/svg+xml" href="favicon-site.svg">
-  <link rel="apple-touch-icon" href="icon/favicon-site.svg">
+  <link rel="apple-touch-icon" href="favicon-site.svg">
 
-  <!-- Typographie moderne : Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -26,26 +25,25 @@
   </header>
 
   <main class="container">
-    <!-- Panneau latéral sur ordinateur / En-tête sur mobile -->
     <aside class="left-panel">
-      <!-- Card Prochain Bus -->
       <section class="card highlight-card">
         <h2>📍 Prochain Passage</h2>
         <div id="bus-result" class="bus-info">Recherche de l'arrêt le plus proche via GPS...</div>
       </section>
 
-      <!-- Carte Leaflet -->
       <div class="map-wrapper">
         <button type="button" id="recenter-btn" class="recenter-btn">📍 Recentrer</button>
         <div id="map" class="map-container"></div>
       </div>
     </aside>
 
-    <!-- Section Grille Horaire -->
     <section class="card" id="card-horaires">
       <h2>📅 Horaires du jour</h2>
 
-      <div class="tabs-container" id="tabs"></div>
+      <div class="select-wrapper">
+        <label for="arret-select">Arrêt de départ :</label>
+        <select id="arret-select" class="arret-select"></select>
+      </div>
 
       <div class="search-wrapper">
         <input 

@@ -90,7 +90,6 @@ def main():
 
     zf = zipfile.ZipFile(io.BytesIO(blob))
 
-    # --- courses des deux lignes
     trips = {}
     for r in lire(zf, "trips.txt"):
         rid = r["route_id"].strip('"')
@@ -98,10 +97,8 @@ def main():
             trips[r["trip_id"]] = r
     print(f"  {len(trips)} courses sur les lignes {', '.join(LIGNES.values())}")
 
-    # --- arrêts
     stops = {r["stop_id"]: r for r in lire(zf, "stops.txt")}
 
-    # --- passages
     passages = defaultdict(list)
     for r in lire(zf, "stop_times.txt"):
         if r["trip_id"] in trips:
@@ -110,7 +107,6 @@ def main():
         v.sort(key=lambda x: int(x["stop_sequence"]))
     print(f"  {sum(len(v) for v in passages.values())} passages")
 
-    # --- calendriers
     utilises = {t["service_id"] for t in trips.values()}
     services = {}
     for r in lire(zf, "calendar.txt"):
@@ -135,7 +131,6 @@ def main():
     quais = {sid for tid in passages for sid in (p["stop_id"] for p in passages[tid])}
     com = communes(quais)
 
-    # 1. Identifier tous les arrêts bruts
     arrets_bruts = {}
     for sid, st in stops.items():
         aid = st["parent_station"] or sid
@@ -155,7 +150,6 @@ def main():
                 a["commune"] = com[sid]
                 break
 
-    # 2. Filtrer les arrêts autorisés
     COMMUNES_AUTORISEES = {"orleans", "loury", "neuville aux bois"}
     MOTS_EXCLUS = {"charmettes", "cimetiere", "college", "pichardiere"}
 
@@ -171,7 +165,6 @@ def main():
     def nom_affichage(a):
         return f"{a['commune'].upper()} — {a['nom']}" if a.get("commune") else a["nom"]
 
-    # 3. Générer les départs uniquement vers les arrêts autorisés situés en aval
     for tid, seq in passages.items():
         t = trips[tid]
         ligne = LIGNES[t["route_id"].strip('"')]
@@ -196,7 +189,6 @@ def main():
                         "s": t["service_id"],
                     })
 
-    # 4. Dédoublonner et trier
     for a in arrets_filtres.values():
         vus, uniques = set(), []
         for d in sorted(a["departs"], key=lambda d: (d["h"], d["arr"], d["dest"], d["l"])):
