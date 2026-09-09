@@ -84,7 +84,6 @@ function renderSelect() {
   ).join('');
 }
 
-// NOUVELLE FONCTION : Génère les options du menu des destinations
 function renderDestSelect() {
   const destSelect = document.getElementById('dest-select');
   if (!destSelect || !REF) return;
@@ -93,7 +92,6 @@ function renderDestSelect() {
   const arret = REF.arrets.find(a => a.id === currentArretId);
   if (!arret) return;
 
-  // On extrait toutes les destinations uniques possibles depuis cet arrêt
   const dests = new Set();
   arret.departs.forEach(d => dests.add(d.dest));
   
@@ -102,12 +100,35 @@ function renderDestSelect() {
   destSelect.innerHTML = '<option value="">Tous les arrêts</option>' +
     sortedDests.map(dest => `<option value="${dest}">${dest}</option>`).join('');
 
-  // Rétablit la sélection précédente si elle existe toujours pour ce nouvel arrêt de départ
   if (sortedDests.includes(currentDest)) {
     destSelect.value = currentDest;
   } else {
     destSelect.value = "";
   }
+}
+
+// NOUVELLE FONCTION : Génère les 7 prochains jours de la semaine
+function renderJourSelect() {
+  const jourSelect = document.getElementById('jour-select');
+  if (!jourSelect) return;
+
+  const joursSemaine = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  let html = '';
+  const now = new Date();
+  
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now.getTime() + i * 86400000);
+    const nomJour = joursSemaine[d.getDay()];
+    let label = nomJour;
+    
+    if (i === 0) label = `Aujourd'hui (${nomJour})`;
+    else if (i === 1) label = `Demain (${nomJour})`;
+    
+    // On utilise le format YYYYMMDD en value pour faciliter le filtrage ensuite
+    html += `<option value="${ymd(d)}">${label}</option>`;
+  }
+  
+  jourSelect.innerHTML = html;
 }
 
 function selectArret(arretId) {
@@ -116,7 +137,7 @@ function selectArret(arretId) {
   if (select && select.value !== arretId) {
     select.value = arretId;
   }
-  renderDestSelect(); // Met à jour la liste des destinations
+  renderDestSelect();
   filterHoraires();
 }
 
@@ -128,12 +149,39 @@ function filterHoraires() {
 
   const destSelect = document.getElementById('dest-select');
   const destinationChoisie = destSelect ? destSelect.value : "";
-  
-  const departs = getProchaines24Heures(arret)
-    .filter(d => destinationChoisie === "" || d.dest === destinationChoisie);
+
+  const jourSelect = document.getElementById('jour-select');
+  const todayYMD = ymd(new Date());
+  const jourChoisi = jourSelect ? jourSelect.value : todayYMD;
+
+  let departs = [];
+  let isToday = (jourChoisi === todayYMD);
+
+  if (isToday) {
+    // Si c'est aujourd'hui, on garde le comportement des 24h glissantes
+    departs = getProchaines24Heures(arret)
+      .filter(d => destinationChoisie === "" || d.dest === destinationChoisie);
+  } else {
+    // Si c'est un autre jour, on reconstruit la date et on récupère la journée complète
+    const year = parseInt(jourChoisi.substring(0, 4), 10);
+    const month = parseInt(jourChoisi.substring(4, 6), 10) - 1;
+    const day = parseInt(jourChoisi.substring(6, 8), 10);
+    const dateChoisie = new Date(year, month, day);
+
+    departs = departsDuJour(arret, dateChoisie)
+      .filter(d => destinationChoisie === "" || d.dest === destinationChoisie);
+
+    // Ajout d'un marqueur pour l'affichage visuel
+    departs = departs.map(d => ({ 
+      ...d, 
+      isDemain: false, 
+      isOtherDay: true, 
+      dateObj: dateChoisie 
+    }));
+  }
 
   if (departs.length === 0) {
-    conteneur.innerHTML = '<div class="no-result">Aucun départ prévu dans les prochaines 24h'
+    conteneur.innerHTML = '<div class="no-result">Aucun départ prévu pour ce jour'
       + (destinationChoisie ? ' vers cette destination.' : '.') + '</div>';
     return;
   }
@@ -149,6 +197,9 @@ function filterHoraires() {
         if (d.isDemain) {
           itemClass = ' tomorrow-bus';
           statusLabel = '<div class="tomorrow-label">📅 Demain</div>';
+        } else if (d.isOtherDay) {
+          const joursSemaine = ['Dim.', 'Lun.', 'Mar.', 'Mer.', 'Jeu.', 'Ven.', 'Sam.'];
+          statusLabel = `<div class="today-label">📅 ${joursSemaine[d.dateObj.getDay()]}</div>`;
         } else {
           if (maintenant >= d.arr) {
             itemClass = ' past-bus';
@@ -222,7 +273,6 @@ function findNextBus(userLat, userLng) {
 
   lastClosestStop = arretProche;
 
-  // L'arrêt le plus proche est toujours sélectionné dans la liste
   selectArret(arretProche.id);
 
   if (map && !mapCenteredOnce) {
@@ -291,10 +341,15 @@ function brancherEvenements() {
     });
   }
   
-  // Écouteur pour le nouveau menu des arrivées
   const destSelect = document.getElementById('dest-select');
   if (destSelect) {
     destSelect.addEventListener('change', filterHoraires);
+  }
+
+  // Écouteur pour le nouveau menu des jours
+  const jourSelect = document.getElementById('jour-select');
+  if (jourSelect) {
+    jourSelect.addEventListener('change', filterHoraires);
   }
     
   const btnRecenter = document.getElementById('recenter-btn');
@@ -365,6 +420,7 @@ async function init() {
   brancherEvenements();
   initCarte();
   renderSelect();
+  renderJourSelect(); // On génère les jours
   selectArret(defaut.id);
   afficherPeriode();
 

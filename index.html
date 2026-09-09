@@ -38,19 +38,24 @@
     </aside>
 
     <section class="card" id="card-horaires">
-      <h2>📅 Horaires du jour</h2>
+      <h2>📅 Horaires</h2>
 
       <div class="select-wrapper">
         <label for="arret-select">Arrêt de départ :</label>
         <select id="arret-select" class="arret-select"></select>
       </div>
 
-      <!-- NOUVEAU MENU DÉROULANT POUR L'ARRIVÉE -->
       <div class="select-wrapper">
         <label for="dest-select">Arrêt d'arrivées :</label>
         <select id="dest-select" class="arret-select">
           <option value="">Tous les arrêts</option>
         </select>
+      </div>
+
+      <!-- NOUVEAU MENU DÉROULANT POUR LES JOURS -->
+      <div class="select-wrapper">
+        <label for="jour-select">Jour :</label>
+        <select id="jour-select" class="arret-select"></select>
       </div>
 
       <div id="table-container"></div>
