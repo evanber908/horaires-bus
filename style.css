@@ -160,6 +160,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-height: 500px; /* Ajuste la hauteur visible souhaitée */
+  overflow-y: auto;
+  padding-right: 6px;
 }
 
 .schedule-item {
@@ -375,12 +378,4 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
   .schedule-time span { font-size: 0.9rem; }
   .schedule-dest { font-size: 1.2rem; }
   .badge { font-size: 1rem; padding: 6px 14px; }
-}
-.tabs-container,
-.search-wrapper {
-  position: sticky;
-  top: 0;
-  background-color: var(--bg-card);
-  z-index: 10;
-  padding-top: 8px;
 }
