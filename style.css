@@ -160,7 +160,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-height: 500px; /* Ajuste la hauteur visible souhaitée */
+  max-height: 570px; /* Ajuste la hauteur visible souhaitée */
   overflow-y: auto;
   padding-right: 6px;
 }
