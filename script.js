@@ -169,13 +169,61 @@ function filterHoraires() {
     departs = departsDuJour(arret, dateChoisie)
       .filter(d => destinationChoisie === "" || d.dest === destinationChoisie);
 
-    departs = departs0.map(d => ({ 
+    // Correction ici : departs au lieu de departs0
+    departs = departs.map(d => ({ 
       ...d, 
       isDemain: false, 
       isOtherDay: true, 
       dateObj: dateChoisie 
     }));
   }
+
+  if (departs.length === 0) {
+    conteneur.innerHTML = '<div class="no-result">Aucun départ prévu pour ce jour'
+      + (destinationChoisie ? ' vers cette destination.' : '.') + '</div>';
+    return;
+  }
+
+  const maintenant = hhmm(new Date());
+
+  conteneur.innerHTML = `
+    <div class="schedule-list">
+      ${departs.map(d => {
+        let itemClass = '';
+        let statusLabel = '';
+
+        if (d.isDemain) {
+          itemClass = ' tomorrow-bus';
+          statusLabel = '<div class="tomorrow-label">📅 Demain</div>';
+        } else if (d.isOtherDay) {
+          const joursSemaine = ['Dim.', 'Lun.', 'Mar.', 'Mer.', 'Jeu.', 'Ven.', 'Sam.'];
+          statusLabel = `<div class="today-label">📅 ${joursSemaine[d.dateObj.getDay()]}</div>`;
+        } else {
+          if (maintenant >= d.arr) {
+            itemClass = ' past-bus';
+            statusLabel = '<div class="past-label">Déjà passé</div>';
+          } else if (maintenant >= d.h && maintenant < d.arr) {
+            itemClass = ' in-transit-bus';
+            statusLabel = '<div class="in-transit-label">🚌 En route</div>';
+          } else {
+            statusLabel = '<div class="today-label">Aujourd\'hui</div>';
+          }
+        }
+
+        return `
+        <div class="schedule-item${itemClass}">
+          <div class="schedule-time">
+            <strong>${d.h}</strong>
+            <span>➔ ${d.arr}</span>
+          </div>
+          <div>${badge(d.l)}</div>
+          <div class="schedule-dest">
+            ${d.dest}${statusLabel}
+          </div>
+        </div>
+      `}).join('')}
+    </div>`;
+}
 
   if (departs.length === 0) {
     conteneur.innerHTML = '<div class="no-result">Aucun départ prévu pour ce jour'
@@ -240,7 +288,6 @@ function filterHoraires() {
       });
     }, 100);
   }
-}
 
 function initCarte() {
   const el = document.getElementById('map');

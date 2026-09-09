@@ -161,8 +161,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-height: 570px; /* Ajuste la hauteur visible souhaitée */
+  max-height: 570px;
   overflow-y: auto;
+  overscroll-behavior: contain; /* Empêche la page de bouger quand on scrolle la liste */
   padding-right: 6px;
 }
 
