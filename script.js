@@ -158,9 +158,11 @@ function filterHoraires() {
   let isToday = (jourChoisi === todayYMD);
 
   if (isToday) {
+    // Si c'est aujourd'hui, on garde le comportement des 24h glissantes
     departs = getProchaines24Heures(arret)
       .filter(d => destinationChoisie === "" || d.dest === destinationChoisie);
   } else {
+    // Si c'est un autre jour, on reconstruit la date et on récupère la journée complète
     const year = parseInt(jourChoisi.substring(0, 4), 10);
     const month = parseInt(jourChoisi.substring(4, 6), 10) - 1;
     const day = parseInt(jourChoisi.substring(6, 8), 10);
@@ -169,7 +171,8 @@ function filterHoraires() {
     departs = departsDuJour(arret, dateChoisie)
       .filter(d => destinationChoisie === "" || d.dest === destinationChoisie);
 
-    departs = departs0.map(d => ({ 
+    // Ajout d'un marqueur pour l'affichage visuel
+    departs = departs.map(d => ({ 
       ...d, 
       isDemain: false, 
       isOtherDay: true, 
@@ -222,24 +225,6 @@ function filterHoraires() {
         </div>
       `}).join('')}
     </div>`;
-
-  // --- NOUVEAU : DÉFILEMENT AUTOMATIQUE INTERNE ---
-  const scheduleList = conteneur.querySelector('.schedule-list');
-  const premierBusActif = conteneur.querySelector('.schedule-item:not(.past-bus)');
-
-  if (premierBusActif && scheduleList) {
-    setTimeout(() => {
-      // Calcule la position exacte du bus par rapport à sa boîte conteneur
-      const listRect = scheduleList.getBoundingClientRect();
-      const itemRect = premierBusActif.getBoundingClientRect();
-      
-      // Fait défiler uniquement la boîte des horaires, sans bouger la page entière
-      scheduleList.scrollTo({
-        top: scheduleList.scrollTop + (itemRect.top - listRect.top),
-        behavior: 'smooth'
-      });
-    }, 100);
-  }
 }
 
 function initCarte() {
@@ -319,17 +304,7 @@ function findNextBus(userLat, userLng) {
 
 async function afficherPeriode() {
   const box = document.getElementById('status-box');
-  const now = new Date();
-  const day = now.getDay(); // 0 = Dimanche, 6 = Samedi
-
-  // Détection du week-end
-  if (day === 0 || day === 6) {
-    box.className = 'weekend';
-    box.innerText = '🥳 Week-end';
-    return;
-  }
-
-  const jour = now.toISOString().split('T')[0];
+  const jour = new Date().toISOString().split('T')[0];
   const url = CONFIG.vacances + '?limit=1&where='
     + encodeURIComponent(`location="Orléans-Tours" and start_date<="${jour}" and end_date>="${jour}"`);
   try {
