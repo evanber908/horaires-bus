@@ -1,5 +1,3 @@
-/* Horaires Rémi 45 — Lignes 20A et 20B */
-
 const CONFIG = {
   horaires: 'data/horaires.json',
   lignes: 'https://data.centrevaldeloire.fr/api/explore/v2.1/catalog/datasets/jvmalin_lignes/records'
@@ -14,9 +12,6 @@ let map = null;
 let userMarker = null;
 let mapCenteredOnce = false; 
 let lastClosestStop = null;
-let autoTabSelected = false; // Empêche de réécrire le choix manuel de l'utilisateur
-
-/* ------------------------------------------------------------------ dates */
 
 function ymd(d) {
   return String(d.getFullYear())
@@ -71,8 +66,6 @@ function getProchaines24Heures(arret) {
   return [...listeAujourdhui, ...listeDemain];
 }
 
-/* ----------------------------------------------------------------- rendus */
-
 function nomArret(a) {
   return a.commune ? `${a.commune.toUpperCase()} — ${a.nom}` : a.nom;
 }
@@ -82,21 +75,69 @@ function badge(ligne) {
   return `<span class="badge" style="background:${couleur}">${ligne}</span>`;
 }
 
-function renderTabs() {
-  const tabs = document.getElementById('tabs');
-  if (!tabs) return;
-  tabs.innerHTML = REF.arrets.map(a =>
-    `<button class="tab-btn ${a.id === currentArretId ? 'active' : ''}" data-arret="${a.id}">`
-    + `${nomArret(a)}</button>`
+function renderSelect() {
+  const select = document.getElementById('arret-select');
+  if (!select || !REF || !REF.arrets) return;
+  select.innerHTML = REF.arrets.map(a =>
+    `<option value="${a.id}" ${a.id === currentArretId ? 'selected' : ''}>`
+    + `${nomArret(a)}</option>`
   ).join('');
 }
 
-function selectArret(arretId, fromUser = false) {
-  if (fromUser) {
-    autoTabSelected = true;
+function renderDestSelect() {
+  const destSelect = document.getElementById('dest-select');
+  if (!destSelect || !REF) return;
+
+  const currentDest = destSelect.value;
+  const arret = REF.arrets.find(a => a.id === currentArretId);
+  if (!arret) return;
+
+  const dests = new Set();
+  arret.departs.forEach(d => dests.add(d.dest));
+  
+  const sortedDests = Array.from(dests).sort();
+
+  destSelect.innerHTML = '<option value="">Tous les arrêts</option>' +
+    sortedDests.map(dest => `<option value="${dest}">${dest}</option>`).join('');
+
+  if (sortedDests.includes(currentDest)) {
+    destSelect.value = currentDest;
+  } else {
+    destSelect.value = "";
   }
+}
+
+// NOUVELLE FONCTION : Génère les 7 prochains jours de la semaine
+function renderJourSelect() {
+  const jourSelect = document.getElementById('jour-select');
+  if (!jourSelect) return;
+
+  const joursSemaine = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  let html = '';
+  const now = new Date();
+  
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now.getTime() + i * 86400000);
+    const nomJour = joursSemaine[d.getDay()];
+    let label = nomJour;
+    
+    if (i === 0) label = `Aujourd'hui (${nomJour})`;
+    else if (i === 1) label = `Demain (${nomJour})`;
+    
+    // On utilise le format YYYYMMDD en value pour faciliter le filtrage ensuite
+    html += `<option value="${ymd(d)}">${label}</option>`;
+  }
+  
+  jourSelect.innerHTML = html;
+}
+
+function selectArret(arretId) {
   currentArretId = arretId;
-  renderTabs();
+  const select = document.getElementById('arret-select');
+  if (select && select.value !== arretId) {
+    select.value = arretId;
+  }
+  renderDestSelect();
   filterHoraires();
 }
 
@@ -106,14 +147,39 @@ function filterHoraires() {
   const arret = REF.arrets.find(a => a.id === currentArretId);
   if (!arret) return;
 
-  const recherche = (document.getElementById('search-destination').value || '').toLowerCase().trim();
-  
-  const departs = getProchaines24Heures(arret)
-    .filter(d => d.dest.toLowerCase().includes(recherche));
+  const destSelect = document.getElementById('dest-select');
+  const destinationChoisie = destSelect ? destSelect.value : "";
+
+  const jourSelect = document.getElementById('jour-select');
+  const todayYMD = ymd(new Date());
+  const jourChoisi = jourSelect ? jourSelect.value : todayYMD;
+
+  let departs = [];
+  let isToday = (jourChoisi === todayYMD);
+
+  if (isToday) {
+    departs = getProchaines24Heures(arret)
+      .filter(d => destinationChoisie === "" || d.dest === destinationChoisie);
+  } else {
+    const year = parseInt(jourChoisi.substring(0, 4), 10);
+    const month = parseInt(jourChoisi.substring(4, 6), 10) - 1;
+    const day = parseInt(jourChoisi.substring(6, 8), 10);
+    const dateChoisie = new Date(year, month, day);
+
+    departs = departsDuJour(arret, dateChoisie)
+      .filter(d => destinationChoisie === "" || d.dest === destinationChoisie);
+
+    departs = departs0.map(d => ({ 
+      ...d, 
+      isDemain: false, 
+      isOtherDay: true, 
+      dateObj: dateChoisie 
+    }));
+  }
 
   if (departs.length === 0) {
-    conteneur.innerHTML = '<div class="no-result">Aucun départ prévu dans les prochaines 24h'
-      + (recherche ? ' vers cette destination.' : '.') + '</div>';
+    conteneur.innerHTML = '<div class="no-result">Aucun départ prévu pour ce jour'
+      + (destinationChoisie ? ' vers cette destination.' : '.') + '</div>';
     return;
   }
 
@@ -128,6 +194,9 @@ function filterHoraires() {
         if (d.isDemain) {
           itemClass = ' tomorrow-bus';
           statusLabel = '<div class="tomorrow-label">📅 Demain</div>';
+        } else if (d.isOtherDay) {
+          const joursSemaine = ['Dim.', 'Lun.', 'Mar.', 'Mer.', 'Jeu.', 'Ven.', 'Sam.'];
+          statusLabel = `<div class="today-label">📅 ${joursSemaine[d.dateObj.getDay()]}</div>`;
         } else {
           if (maintenant >= d.arr) {
             itemClass = ' past-bus';
@@ -153,9 +222,25 @@ function filterHoraires() {
         </div>
       `}).join('')}
     </div>`;
-}
 
-/* --------------------------------------------------------------- carte GPS */
+  // --- NOUVEAU : DÉFILEMENT AUTOMATIQUE INTERNE ---
+  const scheduleList = conteneur.querySelector('.schedule-list');
+  const premierBusActif = conteneur.querySelector('.schedule-item:not(.past-bus)');
+
+  if (premierBusActif && scheduleList) {
+    setTimeout(() => {
+      // Calcule la position exacte du bus par rapport à sa boîte conteneur
+      const listRect = scheduleList.getBoundingClientRect();
+      const itemRect = premierBusActif.getBoundingClientRect();
+      
+      // Fait défiler uniquement la boîte des horaires, sans bouger la page entière
+      scheduleList.scrollTo({
+        top: scheduleList.scrollTop + (itemRect.top - listRect.top),
+        behavior: 'smooth'
+      });
+    }, 100);
+  }
+}
 
 function initCarte() {
   const el = document.getElementById('map');
@@ -203,11 +288,7 @@ function findNextBus(userLat, userLng) {
 
   lastClosestStop = arretProche;
 
-  // Sélectionne l'onglet de l'arrêt le plus proche au premier repérage GPS
-  if (!autoTabSelected) {
-    selectArret(arretProche.id);
-    autoTabSelected = true;
-  }
+  selectArret(arretProche.id);
 
   if (map && !mapCenteredOnce) {
     map.setView([arretProche.lat, arretProche.lng], 14);
@@ -236,11 +317,19 @@ function findNextBus(userLat, userLng) {
   }
 }
 
-/* ------------------------------------------------------- bandeau vacances */
-
 async function afficherPeriode() {
   const box = document.getElementById('status-box');
-  const jour = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const day = now.getDay(); // 0 = Dimanche, 6 = Samedi
+
+  // Détection du week-end
+  if (day === 0 || day === 6) {
+    box.className = 'weekend';
+    box.innerText = '🥳 Week-end';
+    return;
+  }
+
+  const jour = now.toISOString().split('T')[0];
   const url = CONFIG.vacances + '?limit=1&where='
     + encodeURIComponent(`location="Orléans-Tours" and start_date<="${jour}" and end_date>="${jour}"`);
   try {
@@ -269,15 +358,24 @@ async function rafraichirLignes() {
   } catch (e) {}
 }
 
-/* --------------------------------------------------------------- démarrage */
-
 function brancherEvenements() {
-  document.getElementById('tabs').addEventListener('click', e => {
-    const btn = e.target.closest('[data-arret]');
-    if (btn) selectArret(btn.dataset.arret, true);
-  });
+  const select = document.getElementById('arret-select');
+  if (select) {
+    select.addEventListener('change', e => {
+      selectArret(e.target.value);
+    });
+  }
   
-  document.getElementById('search-destination').addEventListener('input', filterHoraires);
+  const destSelect = document.getElementById('dest-select');
+  if (destSelect) {
+    destSelect.addEventListener('change', filterHoraires);
+  }
+
+  // Écouteur pour le nouveau menu des jours
+  const jourSelect = document.getElementById('jour-select');
+  if (jourSelect) {
+    jourSelect.addEventListener('change', filterHoraires);
+  }
     
   const btnRecenter = document.getElementById('recenter-btn');
   if (btnRecenter) {
@@ -346,6 +444,8 @@ async function init() {
 
   brancherEvenements();
   initCarte();
+  renderSelect();
+  renderJourSelect(); // On génère les jours
   selectArret(defaut.id);
   afficherPeriode();
 
