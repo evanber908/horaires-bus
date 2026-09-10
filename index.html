@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mes Horaires Rémi 45</title>
-  <link rel="icon" type="image/svg+xml" href="icon/favicon-site.svg">
-  <link rel="apple-touch-icon" href="favicon-site.svg">
-
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -33,7 +31,7 @@
 
       <div class="map-wrapper">
         <button type="button" id="recenter-btn" class="recenter-btn">📍 Recentrer</button>
-        <div id="map" class="map-container"></div>
+        <div id="map-container" class="map-container"></div>
       </div>
     </aside>
 
@@ -52,7 +50,6 @@
         </select>
       </div>
 
-      <!-- NOUVEAU MENU DÉROULANT POUR LES JOURS -->
       <div class="select-wrapper">
         <label for="jour-select">Jour :</label>
         <select id="jour-select" class="arret-select"></select>
