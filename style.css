@@ -47,6 +47,10 @@ body {
 }
 .vacances { background-color: #fef08a; color: #854d0e; }
 .scolaire { background-color: #d1fae5; color: #065f46; }
+.vacances { background-color: #fef08a; color: #854d0e; }
+.scolaire { background-color: #d1fae5; color: #065f46; }
+.weekend  { background-color: #e0e7ff; color: #3730a3; } /* Style pour le week-end */
+.error    { background-color: #fecaca; color: #991b1b; }
 .error { background-color: #fecaca; color: #991b1b; }
 
 .container {
