@@ -304,17 +304,7 @@ function findNextBus(userLat, userLng) {
 
 async function afficherPeriode() {
   const box = document.getElementById('status-box');
-  const now = new Date();
-  const day = now.getDay(); // 0 = Dimanche, 6 = Samedi
-
-  // Détection du week-end
-  if (day === 0 || day === 6) {
-    box.className = 'weekend';
-    box.innerText = '🥳 Week-end';
-    return;
-  }
-
-  const jour = now.toISOString().split('T')[0];
+  const jour = new Date().toISOString().split('T')[0];
   const url = CONFIG.vacances + '?limit=1&where='
     + encodeURIComponent(`location="Orléans-Tours" and start_date<="${jour}" and end_date>="${jour}"`);
   try {
@@ -327,7 +317,29 @@ async function afficherPeriode() {
     box.className = 'scolaire';
     box.innerText = 'Info non dispo';
   }
- }
+}
+
+async function rafraichirLignes() {
+  try {
+    const res = await fetch(CONFIG.lignes);
+    const data = await res.json();
+    data.results.forEach(r => {
+      REF.lignes[r.route_short_name] = {
+        route_id: r.route_id,
+        nom: r.route_long_name,
+        couleur: '#' + (r.route_color || '3182ce').replace('#', '')
+      };
+    });
+  } catch (e) {}
+}
+
+function brancherEvenements() {
+  const select = document.getElementById('arret-select');
+  if (select) {
+    select.addEventListener('change', e => {
+      selectArret(e.target.value);
+    });
+  }
   
   const destSelect = document.getElementById('dest-select');
   if (destSelect) {
