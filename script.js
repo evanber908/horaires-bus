@@ -225,6 +225,7 @@ function filterHoraires() {
         </div>
       `}).join('')}
     </div>`;
+    scrollToNextBus();
 }
 
 function initCarte() {
@@ -247,6 +248,26 @@ function initCarte() {
   window.addEventListener('resize', () => {
     if (map) map.invalidateSize();
   });
+}
+
+function scrollToNextBus() {
+  const conteneur = document.getElementById('table-container');
+  if (!conteneur) return;
+
+  const scheduleList = conteneur.querySelector('.schedule-list');
+  const premierBusActif = conteneur.querySelector('.schedule-item:not(.past-bus)');
+
+  if (premierBusActif && scheduleList) {
+    setTimeout(() => {
+      const listRect = scheduleList.getBoundingClientRect();
+      const itemRect = premierBusActif.getBoundingClientRect();
+
+      scheduleList.scrollTo({
+        top: scheduleList.scrollTop + (itemRect.top - listRect.top),
+        behavior: 'smooth'
+      });
+    }, 100);
+  }
 }
 
 function calcDistance(lat1, lon1, lat2, lon2) {
@@ -425,6 +446,7 @@ function actualiserGeolocalisation() {
         }
       }
       findNextBus(la, lo);
+      scrollToNextBus();
     },
     () => {
       if (resultat) {
@@ -504,7 +526,9 @@ async function init() {
       + '<br><small style="color:var(--text-muted); margin-top:8px; display:block;">📍 Activez la géolocalisation pour l\'arrêt proche.</small>'
     : `Aucun départ prévu d'ici demain depuis <b>${nomArret(defaut)}</b>.`;
 
-if ('geolocation' in navigator && REF.arrets && REF.arrets.length > 0) {
+    scrollToNextBus();
+
+  if ('geolocation' in navigator && REF.arrets && REF.arrets.length > 0) {
     actualiserGeolocalisation();
   }
 }
