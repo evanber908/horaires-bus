@@ -292,13 +292,29 @@ function findNextBus(userLat, userLng) {
     jourTexte = "demain";
   }
 
+// --- NOUVEAU CODE ---
+  // Calcul du temps de marche à 4,5 km/h
+  const tempsPied = Math.round((distMin / 4.5) * 60);
+  let infoDistance = '';
+
+  if (distMin <= 0.05) { 
+    // Si à moins de 50 mètres (0.05 km)
+    infoDistance = '📍 Vous êtes déjà à cet arrêt !';
+  } else {
+    const distanceTexte = distMin < 1 
+      ? `${Math.round(distMin * 1000)} m` 
+      : `${distMin.toFixed(1)} km`;
+    infoDistance = `📍 Arrêt à ${distanceTexte} de vous (~${tempsPied} min à pied).`;
+  }
+
   if (prochain) {
     resultat.innerHTML = `Prochain départ ${badge(prochain.l)} de `
       + `<b>${nomArret(arretProche)}</b> à <b>${prochain.h}</b> <i>(${jourTexte})</i>, `
       + `arrivée à <b>${prochain.dest}</b> à <b>${prochain.arr}</b>.`
-      + `<br><small style="color:var(--text-muted); margin-top:8px; display:block;">📍 Arrêt à ${distMin.toFixed(1)} km de vous.</small>`;
+      + `<br><small style="color:var(--text-muted); margin-top:8px; display:block;">${infoDistance}</small>`;
   } else {
-    resultat.innerHTML = `Aucun départ prévu d'ici demain pour <b>${nomArret(arretProche)}</b>.`;
+    resultat.innerHTML = `Aucun départ prévu d'ici demain pour <b>${nomArret(arretProche)}</b>.`
+      + `<br><small style="color:var(--text-muted); margin-top:8px; display:block;">${infoDistance}</small>`;
   }
 }
 
