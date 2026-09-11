@@ -256,6 +256,41 @@ body.widget-mode .card:first-of-type { margin-bottom: 0; }
 }
 .recenter-btn:hover { background: #f1f5f9; }
 
+/* Alignement du titre et du bouton d'actualisation */
+.card-header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.card-header-actions h2 {
+  margin-bottom: 0;
+}
+
+/* Style du bouton d'actualisation GPS */
+.refresh-btn {
+  background: var(--bg-card);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.85rem;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+  background: #f1f5f9;
+  border-color: var(--primary);
+}
+
+.refresh-btn:active {
+  transform: scale(0.95);
+}
+
 @media (min-width: 768px) {
   .app-header { max-width: 1500px; padding: 32px 24px 24px; }
   .app-header h1 { font-size: 1.85rem; }

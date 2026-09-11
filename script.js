@@ -351,6 +351,11 @@ function brancherEvenements() {
     });
   }
   
+  const btnRefresh = document.getElementById('refresh-location-btn');
+  if (btnRefresh) {
+    btnRefresh.addEventListener('click', actualiserGeolocalisation);
+  }
+
   const destSelect = document.getElementById('dest-select');
   if (destSelect) {
     destSelect.addEventListener('change', filterHoraires);
@@ -379,6 +384,39 @@ function normaliserChaine(str) {
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/-/g, ' ')
     .trim();
+}
+
+function actualiserGeolocalisation() {
+  const resultat = document.getElementById('bus-result');
+  if (!('geolocation' in navigator) || !REF || !REF.arrets || REF.arrets.length === 0) {
+    if (resultat) resultat.innerHTML = 'Géolocalisation non disponible.';
+    return;
+  }
+
+  if (resultat) {
+    resultat.innerHTML = '🔄 Recherche de votre position GPS en cours...';
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const la = pos.coords.latitude, lo = pos.coords.longitude;
+      if (map) {
+        if (userMarker) {
+          userMarker.setLatLng([la, lo]);
+        } else {
+          userMarker = L.circleMarker([la, lo], { color: '#3b82f6', radius: 8, fillOpacity: 0.8 })
+                           .addTo(map).bindPopup('Votre position');
+        }
+      }
+      findNextBus(la, lo);
+    },
+    () => {
+      if (resultat) {
+        resultat.innerHTML = '⚠️ Géolocalisation refusée ou indisponible.';
+      }
+    },
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+  );
 }
 
 async function init() {
@@ -450,27 +488,8 @@ async function init() {
       + '<br><small style="color:var(--text-muted); margin-top:8px; display:block;">📍 Activez la géolocalisation pour l\'arrêt proche.</small>'
     : `Aucun départ prévu d'ici demain depuis <b>${nomArret(defaut)}</b>.`;
 
-  if ('geolocation' in navigator && REF.arrets && REF.arrets.length > 0) {
-    navigator.geolocation.watchPosition(
-      pos => {
-        const la = pos.coords.latitude, lo = pos.coords.longitude;
-        if (map) {
-          if (userMarker) userMarker.setLatLng([la, lo]);
-          else userMarker = L.circleMarker([la, lo], { color: '#3b82f6', radius: 8, fillOpacity: 0.8 })
-                             .addTo(map).bindPopup('Votre position');
-        }
-        findNextBus(la, lo);
-      },
-      () => {
-        resultat.innerHTML += '<br><small style="color:var(--text-muted); margin-top:8px; display:block;">Géolocalisation refusée.</small>';
-      },
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
-    );
-
-    setInterval(() => {
-      navigator.geolocation.getCurrentPosition(p =>
-        findNextBus(p.coords.latitude, p.coords.longitude));
-    }, 60000);
+if ('geolocation' in navigator && REF.arrets && REF.arrets.length > 0) {
+    actualiserGeolocalisation();
   }
 }
 

@@ -27,13 +27,16 @@
   <main class="container">
     <aside class="left-panel">
       <section class="card highlight-card">
-        <h2>📍 Prochain Passage</h2>
+        <div class="card-header-actions">
+          <h2>📍 Prochain Passage</h2>
+          <button type="button" id="refresh-location-btn" class="refresh-btn">🔄 Actualiser</button>
+        </div>
         <div id="bus-result" class="bus-info">Recherche de l'arrêt le plus proche via GPS...</div>
       </section>
 
       <div class="map-wrapper">
         <button type="button" id="recenter-btn" class="recenter-btn">📍 Recentrer</button>
-        <div id="map-container" class="map-container"></div>
+        <div id="map" class="map-container"></div>
       </div>
     </aside>
 
