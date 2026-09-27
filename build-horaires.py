@@ -16,6 +16,7 @@ import urllib.request
 import zipfile
 from collections import defaultdict
 from datetime import date
+import subprocess
 
 GTFS_URL = "https://fr.ftp.opendatasoft.com/centrevaldeloire/OKINAGTFS/GTFS_AO/REMI.zip"
 ODS = "https://data.centrevaldeloire.fr/api/explore/v2.1/catalog/datasets"
@@ -27,6 +28,20 @@ LIGNES = {
 
 JOURS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
+
+def get_git_info():
+    try:
+        # Récupère le dernier tag Git ou le hash court du commit s'il n'y a pas de tag
+        version = subprocess.check_output(
+            ["git", "describe", "--tags", "--always"], text=True, encoding="utf-8"
+        ).strip()
+        # Récupère la date du dernier commit au format JJ/MM/AAAA
+        date_commit = subprocess.check_output(
+            ["git", "log", "-1", "--format=%cd", "--date=format:%d %B %Y"], text=True, encoding="utf-8"
+        ).strip()
+        return {"version": version, "date": date_commit}
+    except Exception:
+        return {"version": "v1.0.0", "date": date.today().strftime("%d/%m/%Y")}
 
 def lire(zf, nom):
     with zf.open(nom) as f:
@@ -204,6 +219,7 @@ def main():
         "lignes": couleurs() or {n: {"nom": n, "couleur": "#3182ce"} for n in LIGNES.values()},
         "services": services,
         "arrets": sorted(arrets_filtres.values(), key=lambda a: (a.get("commune", ""), a["nom"])),
+        "version_info": get_git_info(),
     }
 
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)

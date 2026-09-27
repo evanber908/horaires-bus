@@ -13,6 +13,16 @@ let userMarker = null;
 let mapCenteredOnce = false; 
 let lastClosestStop = null;
 
+function afficherVersion() {
+  if (!REF || !REF.version_info) return;
+  
+  const tagEl = document.getElementById('site-version-tag');
+  const dateEl = document.getElementById('site-version-date');
+
+  if (tagEl) tagEl.textContent = REF.version_info.version;
+  if (dateEl) dateEl.textContent = REF.version_info.date;
+}
+
 function ymd(d) {
   return String(d.getFullYear())
        + String(d.getMonth() + 1).padStart(2, '0')
@@ -509,6 +519,7 @@ async function init() {
   renderJourSelect(); // On génère les jours
   selectArret(defaut.id);
   afficherPeriode();
+  afficherVersion();
 
   const depsAujourdhui = departsDuJour(defaut, new Date());
   let prochain = depsAujourdhui.find(d => d.h >= hhmm(new Date()));
