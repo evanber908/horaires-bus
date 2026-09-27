@@ -232,9 +232,9 @@ function initCarte() {
   const el = document.getElementById('map');
   if (!el || typeof L === 'undefined') return;
   map = L.map('map').setView([48.0, 2.0], 10);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    attribution: '© OpenStreetMap © CARTO',
-    maxZoom: 19
+  L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap France | © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  maxZoom: 20
   }).addTo(map);
   REF.arrets.forEach(a => {
     L.marker([a.lat, a.lng]).addTo(map).bindPopup(`<b>${nomArret(a)}</b>`);
